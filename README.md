@@ -1,2 +1,0 @@
-# Farmpro
- Final year Project

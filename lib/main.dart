@@ -472,7 +472,6 @@ class fertilizer extends StatelessWidget {
   }
 }
 
-
 class disease extends StatelessWidget {
   const disease({super.key});
   @override
