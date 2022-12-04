@@ -31,6 +31,9 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  image_picker:
+  path_provider:
+  path:
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -67,6 +70,8 @@ flutter:
     - images/fertilizer.png
     - images/disease.png
     - images/weed.png
+    - images/hardware.png
+    - images/testcomplete.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

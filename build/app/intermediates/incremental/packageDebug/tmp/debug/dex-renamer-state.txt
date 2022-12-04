@@ -1,4 +1,4 @@
-#Thu Dec 01 14:07:25 BDT 2022
+#Sun Dec 04 09:47:11 BDT 2022
 base.0=F\:\\Programming\\Farmpro\\build\\app\\intermediates\\dex\\debug\\mergeDexDebug\\classes.dex
 renamed.0=classes.dex
 path.0=classes.dex
