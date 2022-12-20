@@ -60,7 +60,7 @@ class start extends StatelessWidget {
                     width: 200,
                     height: 50,
                     child: ElevatedButton(
-                      child: Text('LogIn',
+                      child: Text('লগইন',
                           style: TextStyle(
                               fontSize: 24, fontFamily: 'TiroBangla-Reg')),
                       style: ButtonStyle(
@@ -85,7 +85,7 @@ class start extends StatelessWidget {
                     width: 200,
                     height: 50,
                     child: ElevatedButton(
-                      child: Text('SignUp',
+                      child: Text('সাইন আপ',
                           style: TextStyle(
                               fontSize: 24, fontFamily: 'TiroBangla-Reg')),
                       style: ButtonStyle(
@@ -120,44 +120,27 @@ class Welcome extends State<Log> {
   bool passenable = true;
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        backgroundColor: Color(0xFFC1DCBD),
-        body: Center(
-          child: Column(
-            children: <Widget>[
-              SizedBox(
-                height: 20.0,
-              ),
-              Image(
-                image: AssetImage('images/mainlogo2.png'),
-                width: 200,
-                height: 200,
-              ),
-              Padding(
-                padding: EdgeInsets.all(10),
-                child: TextField(
-                  decoration: InputDecoration(
-                    filled: true,
-                    fillColor: Colors.greenAccent,
-                    border: OutlineInputBorder(
-                      borderRadius: const BorderRadius.all(
-                        const Radius.circular(20.0),
-                      ),
-                      borderSide: BorderSide(width: 1),
-                    ),
-                    labelText: 'ফোন নম্বর',
-                    hintText: 'আপনার ফোন নম্বর লিখুন',
-                  ),
+    return GestureDetector(
+      onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+      child: Scaffold(
+          resizeToAvoidBottomInset: false,
+          extendBodyBehindAppBar: true,
+          backgroundColor: Color(0xFFC1DCBD),
+          body: Center(
+            child: Column(
+              children: <Widget>[
+                SizedBox(
+                  height: 20.0,
                 ),
-              ),
-              Padding(
-                padding: EdgeInsets.all(10),
-                child: TextField(
-                  obscureText:
-                      passenable, //if passenable == true, show **, else show password character
-                  decoration: InputDecoration(
-                      hintText: "Enter Password Here",
-                      labelText: "Password",
+                Image(
+                  image: AssetImage('images/mainlogo2.png'),
+                  width: 200,
+                  height: 200,
+                ),
+                Padding(
+                  padding: EdgeInsets.all(10),
+                  child: TextField(
+                    decoration: InputDecoration(
                       filled: true,
                       fillColor: Colors.greenAccent,
                       border: OutlineInputBorder(
@@ -166,96 +149,118 @@ class Welcome extends State<Log> {
                         ),
                         borderSide: BorderSide(width: 1),
                       ),
-                      suffix: SizedBox(
-                        height: 25.0,
-                        width: 30.0,
-                        child: IconButton(
-                            onPressed: () {
-                              //add Icon button at end of TextField
-                              setState(() {
-                                //refresh UI
-                                if (passenable) {
-                                  //if passenable == true, make it false
-                                  passenable = false;
-                                } else {
-                                  passenable =
-                                      true; //if passenable == false, make it true
-                                }
-                              });
-                            },
-                            icon: Icon(passenable == true
-                                ? Icons.remove_red_eye
-                                : Icons.password)),
-                      )
-                      //eye icon if passenable = true, else, Icon is ***__
+                      labelText: 'ফোন নম্বর',
+                      hintText: 'আপনার ফোন নম্বর লিখুন',
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.all(10),
+                  child: TextField(
+                    obscureText:
+                        passenable, //if passenable == true, show **, else show password character
+                    decoration: InputDecoration(
+                        hintText: "আপনার পাসওয়ার্ড লিখুন",
+                        labelText: "পাসওয়ার্ড",
+                        filled: true,
+                        fillColor: Colors.greenAccent,
+                        border: OutlineInputBorder(
+                          borderRadius: const BorderRadius.all(
+                            const Radius.circular(20.0),
+                          ),
+                          borderSide: BorderSide(width: 1),
+                        ),
+                        suffix: SizedBox(
+                          height: 25.0,
+                          width: 30.0,
+                          child: IconButton(
+                              onPressed: () {
+                                //add Icon button at end of TextField
+                                setState(() {
+                                  //refresh UI
+                                  if (passenable) {
+                                    //if passenable == true, make it false
+                                    passenable = false;
+                                  } else {
+                                    passenable =
+                                        true; //if passenable == false, make it true
+                                  }
+                                });
+                              },
+                              icon: Icon(passenable == true
+                                  ? Icons.remove_red_eye
+                                  : Icons.password)),
+                        )
+                        //eye icon if passenable = true, else, Icon is ***__
+                        ),
+                  ),
+                ),
+                SizedBox(
+                  height: 10.0,
+                ),
+                ElevatedButton(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text('লগইন',
+                          style: TextStyle(
+                              fontSize: 24,
+                              fontFamily: 'TiroBangla-Reg')), // <-- Text
+                      SizedBox(
+                        width: 50,
+                        height: 50,
                       ),
+                      Icon(
+                        // <-- Icon
+                        Icons.arrow_forward,
+                        size: 24.0,
+                      ),
+                    ],
+                  ),
+                  style: ButtonStyle(
+                      backgroundColor:
+                          MaterialStateProperty.all(Color(0xFF2CA856)),
+                      shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                          RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(18.0)))),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => Menu()),
+                    );
+                  },
                 ),
-              ),
-              SizedBox(
-                height: 10.0,
-              ),
-              ElevatedButton(
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text('Login',
-                        style: TextStyle(
-                            fontSize: 24,
-                            fontFamily: 'TiroBangla-Reg')), // <-- Text
-                    SizedBox(
-                      width: 50,
-                      height: 50,
-                    ),
-                    Icon(
-                      // <-- Icon
-                      Icons.arrow_forward,
-                      size: 24.0,
-                    ),
-                  ],
+                SizedBox(
+                  height: 10.0,
                 ),
-                style: ButtonStyle(
-                    backgroundColor:
-                        MaterialStateProperty.all(Color(0xFF2CA856)),
-                    shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                        RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(18.0)))),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => Menu()),
-                  );
-                },
-              ),
-              SizedBox(
-                height: 10.0,
-              ),
-              Center(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text("Haven't any account?",
-                        style: TextStyle(
-                            fontSize: 18, fontFamily: 'TiroBangla-Reg')),
-                    TextButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => confirm()),
-                          );
-                          //action
-                        },
-                        child: Text("Sign Up",
-                            style: TextStyle(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 18,
-                              color: Colors.green,
-                            ))),
-                  ],
+                Center(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text("একাউন্ট নেই?",
+                          style: TextStyle(
+                              fontSize: 18, fontFamily: 'TiroBangla-Reg')),
+                      TextButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => confirm()),
+                            );
+                            //action
+                          },
+                          child: Text("সাইন আপ করুন",
+                              style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 18,
+                                color: Colors.green,
+                              ))),
+                    ],
+                  ),
                 ),
-              ),
-            ],
-          ),
-        ));
+              ],
+            ),
+          )),
+    );
   }
 }
 
@@ -272,7 +277,7 @@ class Auth extends State<confirm> {
     return GestureDetector(
       onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
       child: Scaffold(
-          resizeToAvoidBottomInset: true,
+          resizeToAvoidBottomInset: false,
           extendBodyBehindAppBar: true,
           backgroundColor: Color(0xFFC1DCBD),
           appBar: AppBar(
@@ -309,7 +314,7 @@ class Auth extends State<confirm> {
                         borderSide: BorderSide(width: 2),
                       ),
                       labelText: 'ফোন নম্বর',
-                      hintText: 'আপনার ফোন নম্বর লিখুন',
+                      hintText: 'নতুন ফোন নম্বর লিখুন',
                     ),
                   ),
                 ),
@@ -319,49 +324,8 @@ class Auth extends State<confirm> {
                     obscureText:
                         passenable, //if passenable == true, show **, else show password character
                     decoration: InputDecoration(
-                        hintText: "Enter Password Here",
-                        labelText: "Password",
-                        filled: true,
-                        fillColor: Colors.greenAccent,
-                        border: OutlineInputBorder(
-                          borderRadius: const BorderRadius.all(
-                            const Radius.circular(20.0),
-                          ),
-                          borderSide: BorderSide(width: 1),
-                        ),
-                        suffix: SizedBox(
-                          height: 25.0,
-                          width: 30.0,
-                          child: IconButton(
-                              onPressed: () {
-                                //add Icon button at end of TextField
-                                setState(() {
-                                  //refresh UI
-                                  if (passenable) {
-                                    //if passenable == true, make it false
-                                    passenable = false;
-                                  } else {
-                                    passenable =
-                                        true; //if passenable == false, make it true
-                                  }
-                                });
-                              },
-                              icon: Icon(passenable == true
-                                  ? Icons.remove_red_eye
-                                  : Icons.password)),
-                        )
-                        //eye icon if passenable = true, else, Icon is ***__
-                        ),
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.all(10),
-                  child: TextField(
-                    obscureText:
-                        passenable, //if passenable == true, show **, else show password character
-                    decoration: InputDecoration(
-                        hintText: "Enter Password Here",
-                        labelText: "Password",
+                        hintText: "নতুন পাসওয়ার্ড লিখুন",
+                        labelText: "পাসওয়ার্ড",
                         filled: true,
                         fillColor: Colors.greenAccent,
                         border: OutlineInputBorder(
@@ -432,7 +396,7 @@ class Confirmation extends StatelessWidget {
     return GestureDetector(
       onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
       child: Scaffold(
-        resizeToAvoidBottomInset: true,
+        resizeToAvoidBottomInset: false,
         extendBodyBehindAppBar: true,
         backgroundColor: Color(0xFFC1DCBD),
         appBar: AppBar(
@@ -579,10 +543,11 @@ class NavigationDrawer extends StatelessWidget {
                 height: 30.0,
                 width: 30.0,
               ),
-              title: const Text('Crop Recommendation',
+              title: const Text('জমির জন্য ভালো ফসল',
                   style: TextStyle(
                     fontSize: 16.0,
                     color: Colors.black,
+                    fontFamily: 'TiroBangla-Reg'
                   )),
               onTap: () {
                 Navigator.of(context).push(
@@ -599,10 +564,11 @@ class NavigationDrawer extends StatelessWidget {
                 height: 30.0,
                 width: 30.0,
               ),
-              title: const Text('Fertilizer Recommendation',
+              title: const Text('ফসলের জন্য ভালো সার',
                   style: TextStyle(
                     fontSize: 16.0,
                     color: Colors.black,
+                      fontFamily: 'TiroBangla-Reg'
                   )),
               onTap: () {
                 Navigator.of(context).push(
@@ -619,10 +585,11 @@ class NavigationDrawer extends StatelessWidget {
                 height: 30.0,
                 width: 30.0,
               ),
-              title: const Text('Disease Detection',
+              title: const Text('ফসলের রোগ সনাক্তকরণ',
                   style: TextStyle(
                     fontSize: 16.0,
                     color: Colors.black,
+                      fontFamily: 'TiroBangla-Reg'
                   )),
               onTap: () {
                 Navigator.of(context).push(
@@ -639,10 +606,11 @@ class NavigationDrawer extends StatelessWidget {
                 height: 30.0,
                 width: 30.0,
               ),
-              title: const Text('Weed Detection',
+              title: const Text('আগাছা সনাক্তকরণ',
                   style: TextStyle(
                     fontSize: 16.0,
                     color: Colors.black,
+                      fontFamily: 'TiroBangla-Reg'
                   )),
               onTap: () {
                 Navigator.of(context).push(
@@ -658,10 +626,11 @@ class NavigationDrawer extends StatelessWidget {
                 Icons.access_time,
                 color: Colors.black,
               ),
-              title: const Text('History',
+              title: const Text('হিস্টোরি',
                   style: TextStyle(
                     fontSize: 16.0,
                     color: Colors.black,
+                      fontFamily: 'TiroBangla-Reg'
                   )),
               onTap: () {
                 Navigator.of(context).push(
@@ -677,10 +646,11 @@ class NavigationDrawer extends StatelessWidget {
                 Icons.logout,
                 color: Colors.black,
               ),
-              title: const Text('logout',
+              title: const Text('লগ আউট',
                   style: TextStyle(
                     fontSize: 16.0,
                     color: Colors.black,
+                      fontFamily: 'TiroBangla-Reg'
                   )),
               onTap: () {
                 Navigator.of(context).push(
@@ -707,7 +677,7 @@ class table extends DataTableSource {
             "Nitrogen": Random().nextInt(100),
             "Phosphorus": Random().nextInt(100),
             "Potassium": Random().nextInt(100),
-            "PH": Random().nextInt(100),
+            "PH": Random().nextInt(10),
             "Humidity": Random().nextInt(100),
           });
   @override
@@ -742,41 +712,45 @@ class history extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         backgroundColor: Colors.green,
-        title: Text('History'),
+        title: Text('হিস্টোরি'),
       ),
-      body: Center(
-        child: Column(
-          children: [
-            SizedBox(
-              height: 5.0,
-            ),
-            Container(
-                padding: EdgeInsets.all(10.0),
-                width: 360.0,
-                decoration: BoxDecoration(
-                    color: Colors.green,
-                    borderRadius: BorderRadius.all(Radius.circular(20))),
-                child: PaginatedDataTable(
-                  columns: [
-                    DataColumn(label: Text('Time')),
-                    DataColumn(label: Text("Date")),
-                    DataColumn(label: Text('Nitrogen')),
-                    DataColumn(label: Text('Phosphorus')),
-                    DataColumn(label: Text('Potassium')),
-                    DataColumn(label: Text('PH')),
-                    DataColumn(label: Text('Hunidity')),
-                  ],
-                  source: _data,
-                  header: const Center(
-                    child: Text('History'),
-                  ),
-                  columnSpacing: 30,
-                  horizontalMargin: 20,
-                  rowsPerPage: 10,
-                )),
-          ],
+      body: SingleChildScrollView(
+        child: Center(
+          child: Column(
+            children: [
+              SizedBox(
+                height: 5.0,
+              ),
+              Container(
+                  padding: EdgeInsets.all(10.0),
+                  width: 360.0,
+                  decoration: BoxDecoration(
+                      color: Colors.green,
+                      borderRadius: BorderRadius.all(Radius.circular(20))),
+                  child: PaginatedDataTable(
+                    columns: [
+                      DataColumn(label: Text('সময়')),
+                      DataColumn(label: Text("তারিখ")),
+                      DataColumn(label: Text('নাইট্রোজেন')),
+                      DataColumn(label: Text('ফসফরাস')),
+                      DataColumn(label: Text('পটাশিয়াম')),
+                      DataColumn(label: Text('pH')),
+                      DataColumn(label: Text('আর্দ্রতা')),
+                    ],
+                    source: _data,
+                    header: const Center(
+                      child: Text('পূর্ববর্তী রেকর্ডসমূহ'),
+                    ),
+                    columnSpacing: 30,
+                    horizontalMargin: 20,
+                    rowsPerPage: 10,
+                  )
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -1921,7 +1895,7 @@ class fertilizerresult extends StatelessWidget {
                                           source: _data,
                                           header: const Center(
                                             child:
-                                                Text('Recommended Fertilizer'),
+                                                Text('কতিপয় সারের নাম ও পরিমাণ'),
                                           ),
                                           columnSpacing: 90,
                                           horizontalMargin: 60,
@@ -2289,7 +2263,7 @@ class diseaseresult extends StatelessWidget {
                   height: 60,
                 ),
                 Text(
-                  "ফসলের রোগ শ্নাক্তকরণ",
+                  "ফসলের রোগ সনাক্তকরণ",
                   style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
