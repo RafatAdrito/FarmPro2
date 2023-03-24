@@ -23,6 +23,7 @@ void main() {
     home: start(),
   ));
 }
+//Starting page
 
 class start extends StatelessWidget {
   const start({super.key});
@@ -110,6 +111,8 @@ class start extends StatelessWidget {
   }
 }
 
+
+//Login Page
 class Log extends StatefulWidget {
   @override
   Welcome createState() => Welcome();
@@ -264,6 +267,8 @@ class Welcome extends State<Log> {
     );
   }
 }
+
+//SignUP Page
 
 class confirm extends StatefulWidget {
   @override
@@ -479,6 +484,9 @@ class Confirmation extends StatelessWidget {
 //   @override
 //   Menu createState() => Menu();
 // }
+
+//Sidebar
+
 class NavigationDrawer extends StatelessWidget {
   const NavigationDrawer({super.key});
   @override
