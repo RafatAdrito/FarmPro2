@@ -137,6 +137,7 @@ class Welcome extends State<Log> {
                   width: 200,
                   height: 200,
                 ),
+
                 Padding(
                   padding: EdgeInsets.all(10),
                   child: TextField(
