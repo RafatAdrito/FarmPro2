@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "1031591788427",
+    "firebase_url": "https://farmpro-2b672-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "farmpro-2b672",
+    "storage_bucket": "farmpro-2b672.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1031591788427:android:17777c9d5b9fc7ca2b798e",
+        "android_client_info": {
+          "package_name": "com.example.farmpro"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1031591788427-k9092e4jjop6a0vslfdchmkhft3ek8uu.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBmptFjDOFFKQiAIgYFIYWnFGYi8tg2nQQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1031591788427-k9092e4jjop6a0vslfdchmkhft3ek8uu.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

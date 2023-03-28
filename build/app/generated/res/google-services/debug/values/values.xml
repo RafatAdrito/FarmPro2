@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="default_web_client_id" translatable="false">1031591788427-k9092e4jjop6a0vslfdchmkhft3ek8uu.apps.googleusercontent.com</string>
+    <string name="firebase_database_url" translatable="false">https://farmpro-2b672-default-rtdb.asia-southeast1.firebasedatabase.app</string>
+    <string name="gcm_defaultSenderId" translatable="false">1031591788427</string>
+    <string name="google_api_key" translatable="false">AIzaSyBmptFjDOFFKQiAIgYFIYWnFGYi8tg2nQQ</string>
+    <string name="google_app_id" translatable="false">1:1031591788427:android:17777c9d5b9fc7ca2b798e</string>
+    <string name="google_crash_reporting_api_key" translatable="false">AIzaSyBmptFjDOFFKQiAIgYFIYWnFGYi8tg2nQQ</string>
+    <string name="google_storage_bucket" translatable="false">farmpro-2b672.appspot.com</string>
+    <string name="project_id" translatable="false">farmpro-2b672</string>
+</resources>
