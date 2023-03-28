@@ -1,6 +1,6 @@
 import 'dart:math';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
-
 import 'package:farmpro/main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -8,11 +8,21 @@ import 'dart:async';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:path/path.dart';
+//import 'package:path/path.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/src/widgets/framework.dart';
+import 'package:path/src/context.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:get_storage/get_storage.dart';
+import 'package:get/get.dart';
 
-void main() {
+
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
+  await Firebase.initializeApp();
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
@@ -20,30 +30,152 @@ void main() {
 
   runApp(MaterialApp(
     debugShowCheckedModeBanner: false,
-    home: start(),
+    home: SplashScreen(),
   ));
 }
+
 //Starting page
 
-class start extends StatelessWidget {
-  const start({super.key});
+class SplashScreen extends StatefulWidget {
+  const SplashScreen({Key? key}) : super(key: key);
+
+  @override
+  State<SplashScreen> createState() => _SplashScreenState();
+}
+
+class SplashServices {
+  void isLogin(BuildContext context) {
+    final auth = FirebaseAuth.instance;
+    final user = auth.currentUser;
+    if (user != null) {
+      Timer(
+          const Duration(seconds: 2),
+          () => Navigator.push(
+              context, MaterialPageRoute(builder: (context) => Menu())));
+    } else {
+      Timer(
+          const Duration(seconds: 2),
+          () => Navigator.push(
+              context, MaterialPageRoute(builder: (context) => startpage())));
+    }
+  }
+}
+
+class _SplashScreenState extends State<SplashScreen> {
+  SplashServices splashScreen = SplashServices();
+  DateTime timebackpressed = DateTime.now();
+  @override
+  void initState() {
+    super.initState();
+    splashScreen.isLogin(context);
+  }
+
+  Widget build(BuildContext context) {
+    return WillPopScope(
+      onWillPop: () async {
+        final difference = DateTime.now().difference(timebackpressed);
+        final isexitwarning = difference >= Duration(seconds: 2);
+        timebackpressed = DateTime.now();
+        if (isexitwarning) {
+          final message = "বের হওয়ার জন্য আরেকবার চাপুন";
+          Fluttertoast.showToast(msg: message, fontSize: 18);
+          return false;
+        } else {
+          Fluttertoast.cancel();
+          return true;
+        }
+      },
+      child: Scaffold(
+          backgroundColor: Color(0xFFC1DCBD),
+          body: SingleChildScrollView(
+            child: Center(
+              child: Column(
+                children: <Widget>[
+                  SizedBox(
+                    height: 30,
+                  ),
+                  Image.asset(
+                    'images/mainlogo2.png',
+                    width: 300,
+                    height: 300,
+                  ),
+                  // SizedBox(
+                  //     width: 200,
+                  //     height: 50,
+                  //     child: ElevatedButton(
+                  //       child: Text('Start',
+                  //           style: TextStyle(
+                  //               fontSize: 24, fontFamily: 'TiroBangla-Reg')),
+                  //       style: ButtonStyle(
+                  //           backgroundColor:
+                  //           MaterialStateProperty.all(Color(0xFF2CA856)),
+                  //           shape:
+                  //           MaterialStateProperty.all<RoundedRectangleBorder>(
+                  //               RoundedRectangleBorder(
+                  //                   borderRadius:
+                  //                   BorderRadius.circular(18.0)))),
+                  //       onPressed: () {
+                  //         Navigator.push(
+                  //           context,
+                  //           MaterialPageRoute(builder: (context) => start()),
+                  //         );
+                  //       },
+                  //     )),
+                ],
+              ),
+            ),
+          )),
+    );
+  }
+}
+
+class startpage extends StatefulWidget {
+  const startpage({Key? key}) : super(key: key);
+
+  @override
+  State<startpage> createState() => start();
+}
+
+class start extends State<startpage> {
+  Future<bool> _onWillPop() async {
+    return (await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: new Text('আপনি কি নিশ্চিত?'),
+        content: new Text('এপ থেকে বের হতে চান?'),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false), //<-- SEE HERE
+            child: new Text('না'),
+          ),
+          TextButton(
+            onPressed: () => SystemNavigator.pop(), // <-- SEE HERE
+            child: new Text('হ্যা'),
+          ),
+        ],
+      ),
+    )) ??
+        false;
+  }
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+    return WillPopScope(
+      // onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+      onWillPop: _onWillPop,
       child: Scaffold(
         resizeToAvoidBottomInset: true,
         extendBodyBehindAppBar: true,
         backgroundColor: Color(0xFFC1DCBD),
         appBar: AppBar(
+          automaticallyImplyLeading: false,
           backgroundColor: Colors.transparent,
           elevation: 0,
-          leading: IconButton(
-              color: Colors.black,
-              icon: Icon(Icons.arrow_back_ios),
-              onPressed: () {
-                Navigator.pop(context);
-              }),
+          // leading: IconButton(
+          //     color: Colors.black,
+          //     icon: Icon(Icons.arrow_back_ios),
+          //     onPressed: () {
+          //       Navigator.pop(context);
+          //     }),
         ),
         body: SingleChildScrollView(
           child: Center(
@@ -111,6 +243,18 @@ class start extends StatelessWidget {
   }
 }
 
+class utils {
+  void toastMessege(String message) {
+    Fluttertoast.showToast(
+        msg: message,
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+        fontSize: 16.0);
+  }
+}
 
 //Login Page
 class Log extends StatefulWidget {
@@ -121,6 +265,31 @@ class Log extends StatefulWidget {
 class Welcome extends State<Log> {
   // const Welcome({super.key});
   bool passenable = true;
+  final _formkey = GlobalKey<FormState>();
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
+  final _auth = FirebaseAuth.instance;
+  @override
+  void dispose() {
+    super.dispose();
+    emailController.dispose();
+    passwordController.dispose();
+  }
+
+  void login() {
+    _auth
+        .signInWithEmailAndPassword(
+            email: emailController.text,
+            password: passwordController.text.toString())
+        .then((value) {
+      utils().toastMessege(value.user!.email.toString());
+      Navigator.push(context, MaterialPageRoute(builder: (context) => Menu()));
+    }).onError((error, stackTrace) {
+      debugPrint(error.toString());
+      utils().toastMessege(error.toString());
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -140,63 +309,63 @@ class Welcome extends State<Log> {
                   width: 200,
                   height: 200,
                 ),
-
                 Padding(
                   padding: EdgeInsets.all(10),
-                  child: TextField(
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: Colors.greenAccent,
-                      border: OutlineInputBorder(
-                        borderRadius: const BorderRadius.all(
-                          const Radius.circular(20.0),
-                        ),
-                        borderSide: BorderSide(width: 1),
-                      ),
-                      labelText: 'ফোন নম্বর',
-                      hintText: 'আপনার ফোন নম্বর লিখুন',
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.all(10),
-                  child: TextField(
-                    obscureText:
-                        passenable, //if passenable == true, show **, else show password character
-                    decoration: InputDecoration(
-                        hintText: "আপনার পাসওয়ার্ড লিখুন",
-                        labelText: "পাসওয়ার্ড",
-                        filled: true,
-                        fillColor: Colors.greenAccent,
-                        border: OutlineInputBorder(
-                          borderRadius: const BorderRadius.all(
-                            const Radius.circular(20.0),
-                          ),
-                          borderSide: BorderSide(width: 1),
-                        ),
-                        suffix: SizedBox(
-                          height: 25.0,
-                          width: 30.0,
-                          child: IconButton(
-                              onPressed: () {
-                                //add Icon button at end of TextField
-                                setState(() {
-                                  //refresh UI
-                                  if (passenable) {
-                                    //if passenable == true, make it false
-                                    passenable = false;
-                                  } else {
-                                    passenable =
-                                        true; //if passenable == false, make it true
+                  child: Column(
+                    children: [
+                      Form(
+                          key: _formkey,
+                          child: Column(
+                            children: [
+                              TextFormField(
+                                decoration: InputDecoration(
+                                  filled: true,
+                                  fillColor: Colors.greenAccent,
+                                  border: OutlineInputBorder(
+                                    borderRadius: const BorderRadius.all(
+                                      const Radius.circular(20.0),
+                                    ),
+                                    borderSide: BorderSide(width: 1),
+                                  ),
+                                  labelText: 'ইমেইল',
+                                  hintText: 'আপনার ইমেইল লিখুন',
+                                ),
+                                controller: emailController,
+                                validator: (value) {
+                                  if (value!.isEmpty) {
+                                    return 'ইমেইল লিখুন';
                                   }
-                                });
-                              },
-                              icon: Icon(passenable == true
-                                  ? Icons.remove_red_eye
-                                  : Icons.password)),
-                        )
-                        //eye icon if passenable = true, else, Icon is ***__
-                        ),
+                                  return null;
+                                },
+                              ),
+                              SizedBox(
+                                height: 30,
+                              ),
+                              TextFormField(
+                                decoration: InputDecoration(
+                                  filled: true,
+                                  fillColor: Colors.greenAccent,
+                                  border: OutlineInputBorder(
+                                    borderRadius: const BorderRadius.all(
+                                      const Radius.circular(20.0),
+                                    ),
+                                    borderSide: BorderSide(width: 1),
+                                  ),
+                                  labelText: 'পাসওয়ার্ড',
+                                  hintText: 'আপনার পাসওয়ার্ড লিখুন',
+                                ),
+                                controller: passwordController,
+                                obscureText: true,
+                                validator: (value) {
+                                  if (value!.isEmpty) {
+                                    return 'পাসওয়ার্ড লিখুন';
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ],
+                          )),
+                    ],
                   ),
                 ),
                 SizedBox(
@@ -228,10 +397,9 @@ class Welcome extends State<Log> {
                           RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(18.0)))),
                   onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => Menu()),
-                    );
+                    if (_formkey.currentState!.validate()) {
+                      login();
+                    }
                   },
                 ),
                 SizedBox(
@@ -248,7 +416,8 @@ class Welcome extends State<Log> {
                           onPressed: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (context) => confirm()),
+                              MaterialPageRoute(
+                                  builder: (context) => confirm()),
                             );
                             //action
                           },
@@ -278,6 +447,21 @@ class confirm extends StatefulWidget {
 class Auth extends State<confirm> {
   // const Auth({super.key});
   bool passenable = true;
+  bool loading = false;
+  final _formkey = GlobalKey<FormState>();
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
+
+  FirebaseAuth _auth = FirebaseAuth.instance;
+
+  // const start({super.key});
+  @override
+  void dispose() {
+    super.dispose();
+    emailController.dispose();
+    passwordController.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -286,106 +470,180 @@ class Auth extends State<confirm> {
           resizeToAvoidBottomInset: false,
           extendBodyBehindAppBar: true,
           backgroundColor: Color(0xFFC1DCBD),
-          appBar: AppBar(
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            leading: IconButton(
-                color: Colors.black,
-                icon: Icon(Icons.arrow_back_ios),
-                onPressed: () {
-                  Navigator.pop(context);
-                }),
-          ),
-          body: SingleChildScrollView(
+          body: Center(
             child: Column(
               children: <Widget>[
                 SizedBox(
-                  height: 80,
+                  height: 20.0,
                 ),
-                Image.asset(
-                  'images/mainlogo2.png',
+                Image(
+                  image: AssetImage('images/mainlogo2.png'),
                   width: 200,
                   height: 200,
                 ),
                 Padding(
                   padding: EdgeInsets.all(10),
-                  child: TextField(
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: Colors.greenAccent,
-                      border: OutlineInputBorder(
-                        borderRadius: const BorderRadius.all(
-                          const Radius.circular(20.0),
-                        ),
-                        borderSide: BorderSide(width: 2),
-                      ),
-                      labelText: 'ফোন নম্বর',
-                      hintText: 'নতুন ফোন নম্বর লিখুন',
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.all(10),
-                  child: TextField(
-                    obscureText:
-                        passenable, //if passenable == true, show **, else show password character
-                    decoration: InputDecoration(
-                        hintText: "নতুন পাসওয়ার্ড লিখুন",
-                        labelText: "পাসওয়ার্ড",
-                        filled: true,
-                        fillColor: Colors.greenAccent,
-                        border: OutlineInputBorder(
-                          borderRadius: const BorderRadius.all(
-                            const Radius.circular(20.0),
-                          ),
-                          borderSide: BorderSide(width: 1),
-                        ),
-                        suffix: SizedBox(
-                          height: 25.0,
-                          width: 30.0,
-                          child: IconButton(
-                              onPressed: () {
-                                //add Icon button at end of TextField
-                                setState(() {
-                                  //refresh UI
-                                  if (passenable) {
-                                    //if passenable == true, make it false
-                                    passenable = false;
-                                  } else {
-                                    passenable =
-                                        true; //if passenable == false, make it true
+                  child: Column(
+                    children: [
+                      Form(
+                          key: _formkey,
+                          child: Column(
+                            children: [
+                              TextFormField(
+                                decoration: InputDecoration(
+                                  filled: true,
+                                  fillColor: Colors.greenAccent,
+                                  border: OutlineInputBorder(
+                                    borderRadius: const BorderRadius.all(
+                                      const Radius.circular(20.0),
+                                    ),
+                                    borderSide: BorderSide(width: 1),
+                                  ),
+                                  labelText: 'ইমেইল',
+                                  hintText: 'আপনার ইমেইল লিখুন',
+                                ),
+                                controller: emailController,
+                                validator: (value) {
+                                  if (value!.isEmpty) {
+                                    return 'ইমেইল লিখুন';
                                   }
-                                });
-                              },
-                              icon: Icon(passenable == true
-                                  ? Icons.remove_red_eye
-                                  : Icons.password)),
-                        )
-                        //eye icon if passenable = true, else, Icon is ***__
-                        ),
+                                  return null;
+                                },
+                              ),
+                              SizedBox(
+                                height: 30,
+                              ),
+                              TextFormField(
+                                decoration: InputDecoration(
+                                  filled: true,
+                                  fillColor: Colors.greenAccent,
+                                  border: OutlineInputBorder(
+                                    borderRadius: const BorderRadius.all(
+                                      const Radius.circular(20.0),
+                                    ),
+                                    borderSide: BorderSide(width: 1),
+                                  ),
+                                  labelText: 'পাসওয়ার্ড',
+                                  hintText: 'আপনার পাসওয়ার্ড লিখুন',
+                                ),
+                                controller: passwordController,
+                                obscureText: true,
+                                validator: (value) {
+                                  if (value!.isEmpty) {
+                                    return 'পাসওয়ার্ড লিখুন';
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ],
+                          )),
+                    ],
                   ),
                 ),
                 SizedBox(
-                  width: 200,
-                  height: 50,
-                  child: ElevatedButton(
-                    child: Text('কোড পাঠান',
-                        style: TextStyle(
-                            fontSize: 24, fontFamily: 'TiroBangla-Reg')),
-                    style: ButtonStyle(
-                        backgroundColor:
-                            MaterialStateProperty.all(Color(0xFF2CA856)),
-                        shape:
-                            MaterialStateProperty.all<RoundedRectangleBorder>(
-                                RoundedRectangleBorder(
-                                    borderRadius:
-                                        BorderRadius.circular(18.0)))),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => Confirmation()),
+                  height: 10.0,
+                ),
+                ElevatedButton(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text('সাইন আপ',
+                          style: TextStyle(
+                              fontSize: 24,
+                              fontFamily: 'TiroBangla-Reg')), // <-- Text
+                      SizedBox(
+                        width: 50,
+                        height: 50,
+                      ),
+                      Icon(
+                        // <-- Icon
+                        Icons.arrow_forward,
+                        size: 24.0,
+                      ),
+                    ],
+                  ),
+                  style: ButtonStyle(
+                      backgroundColor:
+                          MaterialStateProperty.all(Color(0xFF2CA856)),
+                      shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                          RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(18.0)))),
+                  onPressed: () async {
+                    UserCredential userCredential =
+                    await _auth.createUserWithEmailAndPassword(
+                        email: emailController.text.toString(),
+                        password: passwordController.text.toString());
+
+                    if (_formkey.currentState!.validate()) {
+                      setState(() {
+                        loading = true;
+                      });
+
+                      _auth
+                          .createUserWithEmailAndPassword(
+                          email: emailController.text.toString(),
+                          password: passwordController.text.toString())
+                          .then(
+                            (value) {
+                          FirebaseFirestore.instance
+                              .collection('users')
+                              .doc(value.user!.uid)
+                              .set({"email": value.user!.email});
+
+                          // if (_formkey.currentState!.validate()) {
+                          //   setState(
+                          //     () {
+                          //       loading = false;
+                          //     },
+                          //   );
+                          // }
+                        },
                       );
-                    },
+                    }
+                    if (userCredential.user != null) {
+                      DatabaseReference userRef =
+                      FirebaseDatabase.instance.reference().child('users');
+                      String email = emailController.toString();
+
+                      String uid = userCredential.user!.uid;
+                      await userRef.child(uid).set({'email': email}).onError(
+                            (error, stackTrace) {
+                          utils().toastMessege(error.toString());
+                        },
+                      );
+
+                    }
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => Menu()),
+                    );
+                  },
+                ),
+                SizedBox(
+                  height: 10.0,
+                ),
+                Center(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text("একাউন্ট আছে?",
+                          style: TextStyle(
+                              fontSize: 18, fontFamily: 'TiroBangla-Reg')),
+                      TextButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => Log()),
+                            );
+                            //action
+                          },
+                          child: Text("লগইন করুন",
+                              style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 18,
+                                color: Colors.green,
+                              ))),
+                    ],
                   ),
                 ),
               ],
@@ -395,86 +653,86 @@ class Auth extends State<confirm> {
   }
 }
 
-class Confirmation extends StatelessWidget {
-  const Confirmation({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
-      child: Scaffold(
-        resizeToAvoidBottomInset: false,
-        extendBodyBehindAppBar: true,
-        backgroundColor: Color(0xFFC1DCBD),
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          leading: IconButton(
-              color: Colors.black,
-              icon: Icon(Icons.arrow_back_ios),
-              onPressed: () {
-                Navigator.pop(context);
-              }),
-        ),
-        body: SingleChildScrollView(
-          child: Column(
-            children: <Widget>[
-              SizedBox(
-                height: 30,
-              ),
-              Image.asset(
-                'images/mainlogo2.png',
-                width: 200,
-                height: 200,
-              ),
-              Text("৪ ডিজিটের কোড লিখুন যা এইমাত্র আপনার ফোনে পাঠিয়েছি",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 24, fontFamily: 'TiroBangla-Reg')),
-              Padding(
-                padding: EdgeInsets.all(30),
-                child: TextField(
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 30),
-                  decoration: InputDecoration(
-                    filled: true,
-                    fillColor: Colors.greenAccent,
-                    border: OutlineInputBorder(
-                      borderRadius: const BorderRadius.all(
-                        const Radius.circular(30.0),
-                      ),
-                      borderSide: BorderSide(width: 2),
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(
-                  width: 200,
-                  height: 50,
-                  child: ElevatedButton(
-                    child: Text('শুরু করুন',
-                        style: TextStyle(
-                            fontSize: 24, fontFamily: 'TiroBangla-Reg')),
-                    style: ButtonStyle(
-                        backgroundColor:
-                            MaterialStateProperty.all(Color(0xFF2CA856)),
-                        shape:
-                            MaterialStateProperty.all<RoundedRectangleBorder>(
-                                RoundedRectangleBorder(
-                                    borderRadius:
-                                        BorderRadius.circular(18.0)))),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => Menu()),
-                      );
-                    },
-                  )),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
+// class Confirmation extends StatelessWidget {
+//   const Confirmation({super.key});
+//   @override
+//   Widget build(BuildContext context) {
+//     return GestureDetector(
+//       onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+//       child: Scaffold(
+//         resizeToAvoidBottomInset: false,
+//         extendBodyBehindAppBar: true,
+//         backgroundColor: Color(0xFFC1DCBD),
+//         appBar: AppBar(
+//           backgroundColor: Colors.transparent,
+//           elevation: 0,
+//           leading: IconButton(
+//               color: Colors.black,
+//               icon: Icon(Icons.arrow_back_ios),
+//               onPressed: () {
+//                 Navigator.pop(context);
+//               }),
+//         ),
+//         body: SingleChildScrollView(
+//           child: Column(
+//             children: <Widget>[
+//               SizedBox(
+//                 height: 30,
+//               ),
+//               Image.asset(
+//                 'images/mainlogo2.png',
+//                 width: 200,
+//                 height: 200,
+//               ),
+//               Text("৪ ডিজিটের কোড লিখুন যা এইমাত্র আপনার ফোনে পাঠিয়েছি",
+//                   textAlign: TextAlign.center,
+//                   style: TextStyle(fontSize: 24, fontFamily: 'TiroBangla-Reg')),
+//               Padding(
+//                 padding: EdgeInsets.all(30),
+//                 child: TextField(
+//                   textAlign: TextAlign.center,
+//                   style: TextStyle(fontSize: 30),
+//                   decoration: InputDecoration(
+//                     filled: true,
+//                     fillColor: Colors.greenAccent,
+//                     border: OutlineInputBorder(
+//                       borderRadius: const BorderRadius.all(
+//                         const Radius.circular(30.0),
+//                       ),
+//                       borderSide: BorderSide(width: 2),
+//                     ),
+//                   ),
+//                 ),
+//               ),
+//               SizedBox(
+//                   width: 200,
+//                   height: 50,
+//                   child: ElevatedButton(
+//                     child: Text('শুরু করুন',
+//                         style: TextStyle(
+//                             fontSize: 24, fontFamily: 'TiroBangla-Reg')),
+//                     style: ButtonStyle(
+//                         backgroundColor:
+//                             MaterialStateProperty.all(Color(0xFF2CA856)),
+//                         shape:
+//                             MaterialStateProperty.all<RoundedRectangleBorder>(
+//                                 RoundedRectangleBorder(
+//                                     borderRadius:
+//                                         BorderRadius.circular(18.0)))),
+//                     onPressed: () {
+//                       Navigator.push(
+//                         context,
+//                         MaterialPageRoute(builder: (context) => Menu()),
+//                       );
+//                     },
+//                   )),
+//             ],
+//           ),
+//         ),
+//       ),
+//     );
+//   }
+// }
 
 // class Rafat extends StatefulWidget {
 //   @override
@@ -486,9 +744,16 @@ class Confirmation extends StatelessWidget {
 // }
 
 //Sidebar
+class NavigationDrawer extends StatefulWidget {
+  const NavigationDrawer({Key? key}) : super(key: key);
 
-class NavigationDrawer extends StatelessWidget {
-  const NavigationDrawer({super.key});
+  @override
+  State<NavigationDrawer> createState() => Navbar();
+}
+
+class Navbar extends State<NavigationDrawer> {
+  final auth = FirebaseAuth.instance;
+  final user=FirebaseAuth.instance.currentUser!;
   @override
   Widget build(BuildContext context) => Drawer(
       backgroundColor: Color(0xFFC1DCBD),
@@ -515,14 +780,14 @@ class NavigationDrawer extends StatelessWidget {
               height: 12.0,
             ),
             Text(
-              'Abrar ahmed',
+              'Signed in as',
               style: TextStyle(
                 fontSize: 28,
                 color: Colors.white,
               ),
             ),
             Text(
-              '880-1306002505',
+              user.email!,
               style: TextStyle(
                 fontSize: 16,
                 color: Colors.white,
@@ -554,10 +819,9 @@ class NavigationDrawer extends StatelessWidget {
               ),
               title: const Text('জমির জন্য ভালো ফসল',
                   style: TextStyle(
-                    fontSize: 16.0,
-                    color: Colors.black,
-                    fontFamily: 'TiroBangla-Reg'
-                  )),
+                      fontSize: 16.0,
+                      color: Colors.black,
+                      fontFamily: 'TiroBangla-Reg')),
               onTap: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(
@@ -575,10 +839,9 @@ class NavigationDrawer extends StatelessWidget {
               ),
               title: const Text('ফসলের জন্য ভালো সার',
                   style: TextStyle(
-                    fontSize: 16.0,
-                    color: Colors.black,
-                      fontFamily: 'TiroBangla-Reg'
-                  )),
+                      fontSize: 16.0,
+                      color: Colors.black,
+                      fontFamily: 'TiroBangla-Reg')),
               onTap: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(
@@ -596,10 +859,9 @@ class NavigationDrawer extends StatelessWidget {
               ),
               title: const Text('ফসলের রোগ সনাক্তকরণ',
                   style: TextStyle(
-                    fontSize: 16.0,
-                    color: Colors.black,
-                      fontFamily: 'TiroBangla-Reg'
-                  )),
+                      fontSize: 16.0,
+                      color: Colors.black,
+                      fontFamily: 'TiroBangla-Reg')),
               onTap: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(
@@ -617,10 +879,9 @@ class NavigationDrawer extends StatelessWidget {
               ),
               title: const Text('আগাছা সনাক্তকরণ',
                   style: TextStyle(
-                    fontSize: 16.0,
-                    color: Colors.black,
-                      fontFamily: 'TiroBangla-Reg'
-                  )),
+                      fontSize: 16.0,
+                      color: Colors.black,
+                      fontFamily: 'TiroBangla-Reg')),
               onTap: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(
@@ -637,10 +898,9 @@ class NavigationDrawer extends StatelessWidget {
               ),
               title: const Text('হিস্টোরি',
                   style: TextStyle(
-                    fontSize: 16.0,
-                    color: Colors.black,
-                      fontFamily: 'TiroBangla-Reg'
-                  )),
+                      fontSize: 16.0,
+                      color: Colors.black,
+                      fontFamily: 'TiroBangla-Reg')),
               onTap: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(
@@ -657,16 +917,20 @@ class NavigationDrawer extends StatelessWidget {
               ),
               title: const Text('লগ আউট',
                   style: TextStyle(
-                    fontSize: 16.0,
-                    color: Colors.black,
-                      fontFamily: 'TiroBangla-Reg'
-                  )),
+                      fontSize: 16.0,
+                      color: Colors.black,
+                      fontFamily: 'TiroBangla-Reg')),
               onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => start(),
-                  ),
-                );
+                // Navigator.of(context).push(
+                //   MaterialPageRoute(
+                //     builder: (context) => startpage(),
+                //   ),
+                // );
+                auth.signOut().then((value) {
+                  Navigator.push(context, MaterialPageRoute(builder: (context)=>startpage()));
+                }).onError((error, stackTrace){
+                  utils().toastMessege(error.toString());
+                });
               },
             ),
             const Divider(color: Colors.black),
@@ -756,8 +1020,7 @@ class history extends StatelessWidget {
                     columnSpacing: 30,
                     horizontalMargin: 20,
                     rowsPerPage: 10,
-                  )
-              ),
+                  )),
             ],
           ),
         ),
@@ -766,12 +1029,40 @@ class history extends StatelessWidget {
   }
 }
 
-class Menu extends StatelessWidget {
-  const Menu({super.key});
+class Menu extends StatefulWidget {
+  const Menu({Key? key}) : super(key: key);
+
+  @override
+  State<Menu> createState() => Menus();
+}
+
+
+class Menus extends State<Menu> {
+  Future<bool> _onWillPop() async {
+    return (await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: new Text('আপনি কি নিশ্চিত?'),
+        content: new Text('এপ থেকে বের হতে চান?'),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false), //<-- SEE HERE
+            child: new Text('না'),
+          ),
+          TextButton(
+            onPressed: () => SystemNavigator.pop(), // <-- SEE HERE
+            child: new Text('হ্যা'),
+          ),
+        ],
+      ),
+    )) ??
+        false;
+  }
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+    return WillPopScope(
+      // onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+      onWillPop: _onWillPop,
       child: Scaffold(
         resizeToAvoidBottomInset: true,
         extendBodyBehindAppBar: true,
@@ -1903,8 +2194,8 @@ class fertilizerresult extends StatelessWidget {
                                           ],
                                           source: _data,
                                           header: const Center(
-                                            child:
-                                                Text('কতিপয় সারের নাম ও পরিমাণ'),
+                                            child: Text(
+                                                'কতিপয় সারের নাম ও পরিমাণ'),
                                           ),
                                           columnSpacing: 90,
                                           horizontalMargin: 60,
@@ -1967,158 +2258,165 @@ class disease extends State<camera> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
-      child: Scaffold(
-        resizeToAvoidBottomInset: true,
-        extendBodyBehindAppBar: true,
-        backgroundColor: Color(0xFFC1DCBD),
-        appBar: AppBar(
-          backgroundColor: Colors.green,
-          // elevation: 0,
-          // leading: IconButton(
-          //     color: Colors.white,
-          //     icon: Icon(Icons.menu),
-          //     onPressed: () {
-          //       Navigator.of(context).popUntil((route) => route.isFirst);
-          //     }),
-        ),
-        drawer: const NavigationDrawer(),
-        body: Center(child: Wrap(
-          alignment: WrapAlignment.spaceBetween,
-          direction: Axis.horizontal,
-          runSpacing: 5.0,
-          spacing: 5.0,
-
-
-          children: <Widget>[
-        Center(
-          child: Column(children: <Widget>[
-            SizedBox(
-              height: 40,
+        onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+        child: Scaffold(
+            resizeToAvoidBottomInset: true,
+            extendBodyBehindAppBar: true,
+            backgroundColor: Color(0xFFC1DCBD),
+            appBar: AppBar(
+              backgroundColor: Colors.green,
+              // elevation: 0,
+              // leading: IconButton(
+              //     color: Colors.white,
+              //     icon: Icon(Icons.menu),
+              //     onPressed: () {
+              //       Navigator.of(context).popUntil((route) => route.isFirst);
+              //     }),
             ),
+            drawer: const NavigationDrawer(),
+            body: Center(
+              child: Wrap(
+                  alignment: WrapAlignment.spaceBetween,
+                  direction: Axis.horizontal,
+                  runSpacing: 5.0,
+                  spacing: 5.0,
+                  children: <Widget>[
+                    Center(
+                      child: Column(children: <Widget>[
+                        SizedBox(
+                          height: 40,
+                        ),
 
-            Image.asset(
-              'images/disease.png',
-              width: 70,
-              height: 70,
-            ),
-            Text("ফসলের রোগ সনাক্তকরণ",
-                style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'TiroBangla-Reg')),
-            SizedBox(
-              height: 15.0,
-            ),
+                        Image.asset(
+                          'images/disease.png',
+                          width: 70,
+                          height: 70,
+                        ),
+                        Text("ফসলের রোগ সনাক্তকরণ",
+                            style: TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                fontFamily: 'TiroBangla-Reg')),
+                        SizedBox(
+                          height: 15.0,
+                        ),
 
-            SizedBox(
-              height: 50.0,
-              width: 350.0,
-              child: ElevatedButton(
-                onPressed: () => pickImage(ImageSource.gallery),
-                style: ButtonStyle(
-                    backgroundColor:
-                        MaterialStateProperty.all(Color(0xFFFFFFFF)),
-                    shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                        RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10.0)))),
+                        SizedBox(
+                          height: 50.0,
+                          width: 350.0,
+                          child: ElevatedButton(
+                            onPressed: () => pickImage(ImageSource.gallery),
+                            style: ButtonStyle(
+                                backgroundColor: MaterialStateProperty.all(
+                                    Color(0xFFFFFFFF)),
+                                shape: MaterialStateProperty.all<
+                                        RoundedRectangleBorder>(
+                                    RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(10.0)))),
 
-                // color: Colors.white,
-                // margin: EdgeInsets.symmetric(vertical: 10.0, horizontal: 25.0),
-                child: ListTile(
-                  title: Text(
-                    'ছবি আপলোড করুন',
-                    style: TextStyle(
-                      fontSize: 20.0,
-                      color: Colors.teal.shade900,
-                      fontFamily: 'Source Sans Pro',
+                            // color: Colors.white,
+                            // margin: EdgeInsets.symmetric(vertical: 10.0, horizontal: 25.0),
+                            child: ListTile(
+                              title: Text(
+                                'ছবি আপলোড করুন',
+                                style: TextStyle(
+                                  fontSize: 20.0,
+                                  color: Colors.teal.shade900,
+                                  fontFamily: 'Source Sans Pro',
+                                ),
+                              ),
+                              trailing: Icon(
+                                Icons.folder,
+                                color: Colors.teal,
+                              ),
+                            ),
+                          ),
+                        ),
+                        SizedBox(
+                          height: 10.0,
+                        ),
+                        SizedBox(
+                          height: 50.0,
+                          width: 350.0,
+                          child: ElevatedButton(
+                            onPressed: () => pickImage1(ImageSource.camera),
+                            style: ButtonStyle(
+                                backgroundColor: MaterialStateProperty.all(
+                                    Color(0xFFFFFFFF)),
+                                shape: MaterialStateProperty.all<
+                                        RoundedRectangleBorder>(
+                                    RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(10.0)))),
+
+                            // color: Colors.white,
+                            // margin: EdgeInsets.symmetric(vertical: 10.0, horizontal: 25.0),
+                            child: ListTile(
+                              title: Text(
+                                'ক্যামেরা খুলুন',
+                                style: TextStyle(
+                                  fontSize: 20.0,
+                                  color: Colors.teal.shade900,
+                                  fontFamily: 'Source Sans Pro',
+                                ),
+                              ),
+                              trailing: Icon(
+                                Icons.camera_alt,
+                                color: Colors.teal,
+                              ),
+                            ),
+                          ),
+                        ),
+                        SizedBox(
+                          height: 15.0,
+                        ),
+                        Container(
+                          height: 140,
+                          width: 180,
+                          color: Colors.black12,
+                          child: image == null
+                              ? Icon(
+                                  Icons.image,
+                                  size: 50,
+                                )
+                              : Image.file(
+                                  image!,
+                                  fit: BoxFit.fill,
+                                ),
+                        ),
+                        SizedBox(
+                          height: 15.0,
+                        ),
+                        SizedBox(
+                            width: 200,
+                            height: 50,
+                            child: ElevatedButton(
+                              child: Text('রোগ সনাক্ত করুন',
+                                  style: TextStyle(
+                                      fontSize: 24,
+                                      fontFamily: 'TiroBangla-Reg')),
+                              style: ButtonStyle(
+                                  backgroundColor: MaterialStateProperty.all(
+                                      Color(0xFF2CA856)),
+                                  shape: MaterialStateProperty.all<
+                                          RoundedRectangleBorder>(
+                                      RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(18.0)))),
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => testcomplete2()),
+                                );
+                              },
+                            )),
+                        // _image==null? Container() : Image.file(_image)],
+                      ]),
                     ),
-                  ),
-                  trailing: Icon(
-                    Icons.folder,
-                    color: Colors.teal,
-                  ),
-                ),
-              ),
-            ),
-            SizedBox(
-              height: 10.0,
-            ),
-            SizedBox(
-              height: 50.0,
-              width: 350.0,
-              child: ElevatedButton(
-                onPressed: () => pickImage1(ImageSource.camera),
-                style: ButtonStyle(
-                    backgroundColor:
-                        MaterialStateProperty.all(Color(0xFFFFFFFF)),
-                    shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                        RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10.0)))),
-
-                // color: Colors.white,
-                // margin: EdgeInsets.symmetric(vertical: 10.0, horizontal: 25.0),
-                child: ListTile(
-                  title: Text(
-                    'ক্যামেরা খুলুন',
-                    style: TextStyle(
-                      fontSize: 20.0,
-                      color: Colors.teal.shade900,
-                      fontFamily: 'Source Sans Pro',
-                    ),
-                  ),
-                  trailing: Icon(
-                    Icons.camera_alt,
-                    color: Colors.teal,
-                  ),
-                ),
-              ),
-            ),
-            SizedBox(
-              height: 15.0,
-            ),
-            Container(
-              height: 140,
-              width: 180,
-              color: Colors.black12,
-              child: image == null
-                  ? Icon(
-                      Icons.image,
-                      size: 50,
-                    )
-                  : Image.file(
-                      image!,
-                      fit: BoxFit.fill,
-                    ),
-            ),
-            SizedBox(
-              height: 15.0,
-            ),
-            SizedBox(
-                width: 200,
-                height: 50,
-                child: ElevatedButton(
-                  child: Text('রোগ সনাক্ত করুন',
-                      style: TextStyle(
-                          fontSize: 24, fontFamily: 'TiroBangla-Reg')),
-                  style: ButtonStyle(
-                      backgroundColor:
-                          MaterialStateProperty.all(Color(0xFF2CA856)),
-                      shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                          RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(18.0)))),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => testcomplete2()),
-                    );
-                  },
-                )),
-            // _image==null? Container() : Image.file(_image)],
-          ]),
-        ),
-      ]),
-    )));
+                  ]),
+            )));
   }
 }
 
@@ -2127,106 +2425,107 @@ class testcomplete2 extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
-      child: Scaffold(
-        resizeToAvoidBottomInset: true,
-        extendBodyBehindAppBar: true,
-        backgroundColor: Color(0xFFC1DCBD),
-        appBar: AppBar(
-          backgroundColor: Colors.green,
-          // elevation: 0,
-          // leading: IconButton(
-          //     color: Colors.white,
-          //     icon: Icon(Icons.menu),
-          //     onPressed: () {
-          //       Navigator.of(context).popUntil((route) => route.isFirst);
-          //     }),
-        ),
-        drawer: const NavigationDrawer(),
-        body: Center(child: Wrap(
-          alignment: WrapAlignment.spaceBetween,
-          direction: Axis.horizontal,
-          runSpacing: 5.0,
-          spacing: 5.0,
+        onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+        child: Scaffold(
+            resizeToAvoidBottomInset: true,
+            extendBodyBehindAppBar: true,
+            backgroundColor: Color(0xFFC1DCBD),
+            appBar: AppBar(
+              backgroundColor: Colors.green,
+              // elevation: 0,
+              // leading: IconButton(
+              //     color: Colors.white,
+              //     icon: Icon(Icons.menu),
+              //     onPressed: () {
+              //       Navigator.of(context).popUntil((route) => route.isFirst);
+              //     }),
+            ),
+            drawer: const NavigationDrawer(),
+            body: Center(
+              child: Wrap(
+                  alignment: WrapAlignment.spaceBetween,
+                  direction: Axis.horizontal,
+                  runSpacing: 5.0,
+                  spacing: 5.0,
+                  children: <Widget>[
+                    Center(
+                      child: Column(
+                        children: <Widget>[
+                          SizedBox(
+                            height: 90,
+                          ),
+                          Image.asset(
+                            'images/disease.png',
+                            width: 60,
+                            height: 60,
+                          ),
+                          Text(
+                            "ফসলের রোগ সনাক্তকরণ",
+                            style: TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                fontFamily: 'TiroBangla-Reg'),
+                          ),
+                          SizedBox(
+                            height: 40.0,
+                          ),
+                          SizedBox(
+                            //<-- SEE HERE
+                            width: 250,
+                            height: 250,
+                            child: FittedBox(
+                              //<-- SEE HERE
 
-
-          children: <Widget>[
-        Center(
-          child: Column(
-            children: <Widget>[
-              SizedBox(
-                height: 90,
-              ),
-              Image.asset(
-                'images/disease.png',
-                width: 60,
-                height: 60,
-              ),
-              Text(
-                "ফসলের রোগ সনাক্তকরণ",
-                style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'TiroBangla-Reg'),
-              ),
-              SizedBox(
-                height: 40.0,
-              ),
-              SizedBox(
-                //<-- SEE HERE
-                width: 250,
-                height: 250,
-                child: FittedBox(
-                  //<-- SEE HERE
-
-                  child: CircleAvatar(
-                    radius: 100,
-                    backgroundColor: Colors.white,
-                    backgroundImage: AssetImage('images/testcomplete.png'),
-                  ),
-                ),
-              ),
-              SizedBox(
-                height: 30.0,
-              ),
-              Text(
-                'পরীক্ষা সম্পন্ন হয়েছে',
-                style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'TiroBangla-Reg'),
-              ),
-              SizedBox(
-                height: 50.0,
-              ),
-              SizedBox(
-                  width: 200,
-                  height: 50,
-                  child: ElevatedButton(
-                    child: Text('ফলাফল দেখান',
-                        style: TextStyle(
-                            fontSize: 24, fontFamily: 'TiroBangla-Reg')),
-                    style: ButtonStyle(
-                        backgroundColor:
-                            MaterialStateProperty.all(Color(0xFF2CA856)),
-                        shape:
-                            MaterialStateProperty.all<RoundedRectangleBorder>(
-                                RoundedRectangleBorder(
-                                    borderRadius:
-                                        BorderRadius.circular(18.0)))),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => diseaseresult()),
-                      );
-                    },
-                  )),
-            ],
-          ),
-        ),
-      ]),
-    )));
+                              child: CircleAvatar(
+                                radius: 100,
+                                backgroundColor: Colors.white,
+                                backgroundImage:
+                                    AssetImage('images/testcomplete.png'),
+                              ),
+                            ),
+                          ),
+                          SizedBox(
+                            height: 30.0,
+                          ),
+                          Text(
+                            'পরীক্ষা সম্পন্ন হয়েছে',
+                            style: TextStyle(
+                                fontSize: 28,
+                                fontWeight: FontWeight.bold,
+                                fontFamily: 'TiroBangla-Reg'),
+                          ),
+                          SizedBox(
+                            height: 50.0,
+                          ),
+                          SizedBox(
+                              width: 200,
+                              height: 50,
+                              child: ElevatedButton(
+                                child: Text('ফলাফল দেখান',
+                                    style: TextStyle(
+                                        fontSize: 24,
+                                        fontFamily: 'TiroBangla-Reg')),
+                                style: ButtonStyle(
+                                    backgroundColor: MaterialStateProperty.all(
+                                        Color(0xFF2CA856)),
+                                    shape: MaterialStateProperty.all<
+                                            RoundedRectangleBorder>(
+                                        RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(18.0)))),
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => diseaseresult()),
+                                  );
+                                },
+                              )),
+                        ],
+                      ),
+                    ),
+                  ]),
+            )));
   }
 }
 
@@ -2235,178 +2534,177 @@ class diseaseresult extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
-      child: Scaffold(
-        resizeToAvoidBottomInset: false,
-        extendBodyBehindAppBar: true,
-        backgroundColor: Color(0xFFC1DCBD),
-        appBar: AppBar(
-          backgroundColor: Colors.green,
-          // elevation: 0,
-          // leading: IconButton(
-          //     color: Colors.white,
-          //     icon: Icon(Icons.menu),
-          //     onPressed: () {
-          //       Navigator.of(context).popUntil((route) => route.isFirst);
-          //     }),
-        ),
-        drawer: const NavigationDrawer(),
-        body: Center(child: Wrap(
-          alignment: WrapAlignment.spaceBetween,
-          direction: Axis.horizontal,
-          runSpacing: 5.0,
-          spacing: 5.0,
-
-
-          children: <Widget>[
-         Center(
-          child: SingleChildScrollView(
-            child: Column(
-              children: <Widget>[
-                SizedBox(
-                  height: 90,
-                ),
-                Image.asset(
-                  'images/disease.png',
-                  width: 60,
-                  height: 60,
-                ),
-                Text(
-                  "ফসলের রোগ সনাক্তকরণ",
-                  style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'TiroBangla-Reg'),
-                ),
-                SizedBox(
-                  height: 40.0,
-                ),
-                // SizedBox(
-                //   //<-- SEE HERE
-                //   width: 250,
-                //   height: 250,
-                //
-                // // ),
-                // SizedBox(
-                //   height: 5.0,
-                // ),
-
-                SizedBox(
-                  width: 350,
-                  height: 500,
-                  child: Column(
-                    children: [
-                      SizedBox(
-                        height: 30.0,
-                      ),
-                      Container(
-                        padding: EdgeInsets.all(15.0),
-                        width: 340.0,
-                        decoration: BoxDecoration(
-                            color: Colors.green,
-                            borderRadius:
-                                BorderRadius.all(Radius.circular(20))),
+        onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+        child: Scaffold(
+            resizeToAvoidBottomInset: false,
+            extendBodyBehindAppBar: true,
+            backgroundColor: Color(0xFFC1DCBD),
+            appBar: AppBar(
+              backgroundColor: Colors.green,
+              // elevation: 0,
+              // leading: IconButton(
+              //     color: Colors.white,
+              //     icon: Icon(Icons.menu),
+              //     onPressed: () {
+              //       Navigator.of(context).popUntil((route) => route.isFirst);
+              //     }),
+            ),
+            drawer: const NavigationDrawer(),
+            body: Center(
+              child: Wrap(
+                  alignment: WrapAlignment.spaceBetween,
+                  direction: Axis.horizontal,
+                  runSpacing: 5.0,
+                  spacing: 5.0,
+                  children: <Widget>[
+                    Center(
+                      child: SingleChildScrollView(
                         child: Column(
-                          children: [
+                          children: <Widget>[
                             SizedBox(
-                              height: 15.0,
+                              height: 90,
                             ),
-                            Align(
-                              alignment: Alignment.topCenter,
-                              child: Text(
-                                'রোগ সম্পর্কিত তথ্য',
-                                style: TextStyle(
+                            Image.asset(
+                              'images/disease.png',
+                              width: 60,
+                              height: 60,
+                            ),
+                            Text(
+                              "ফসলের রোগ সনাক্তকরণ",
+                              style: TextStyle(
                                   fontSize: 24,
-                                  fontFamily: 'TiroBangla-Reg',
-                                  color: Colors.white,
-                                ),
-                              ),
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: 'TiroBangla-Reg'),
                             ),
                             SizedBox(
-                              height: 20.0,
+                              height: 40.0,
                             ),
-                            Align(
-                              alignment: Alignment.topLeft,
-                              child: Text(
-                                'রোগের নাম :',
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontFamily: 'TiroBangla-Reg',
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
+                            // SizedBox(
+                            //   //<-- SEE HERE
+                            //   width: 250,
+                            //   height: 250,
+                            //
+                            // // ),
+                            // SizedBox(
+                            //   height: 5.0,
+                            // ),
+
                             SizedBox(
-                              height: 15.0,
-                            ),
-                            Align(
-                              alignment: Alignment.topLeft,
-                              child: Text(
-                                'সঠিক(শতকরা) :',
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontFamily: 'TiroBangla-Reg',
-                                  color: Colors.white,
-                                ),
+                              width: 350,
+                              height: 500,
+                              child: Column(
+                                children: [
+                                  SizedBox(
+                                    height: 30.0,
+                                  ),
+                                  Container(
+                                    padding: EdgeInsets.all(15.0),
+                                    width: 340.0,
+                                    decoration: BoxDecoration(
+                                        color: Colors.green,
+                                        borderRadius: BorderRadius.all(
+                                            Radius.circular(20))),
+                                    child: Column(
+                                      children: [
+                                        SizedBox(
+                                          height: 15.0,
+                                        ),
+                                        Align(
+                                          alignment: Alignment.topCenter,
+                                          child: Text(
+                                            'রোগ সম্পর্কিত তথ্য',
+                                            style: TextStyle(
+                                              fontSize: 24,
+                                              fontFamily: 'TiroBangla-Reg',
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ),
+                                        SizedBox(
+                                          height: 20.0,
+                                        ),
+                                        Align(
+                                          alignment: Alignment.topLeft,
+                                          child: Text(
+                                            'রোগের নাম :',
+                                            style: TextStyle(
+                                              fontSize: 20,
+                                              fontFamily: 'TiroBangla-Reg',
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ),
+                                        SizedBox(
+                                          height: 15.0,
+                                        ),
+                                        Align(
+                                          alignment: Alignment.topLeft,
+                                          child: Text(
+                                            'সঠিক(শতকরা) :',
+                                            style: TextStyle(
+                                              fontSize: 20,
+                                              fontFamily: 'TiroBangla-Reg',
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ),
+                                        SizedBox(
+                                          height: 15.0,
+                                        ),
+                                        Align(
+                                          alignment: Alignment.topLeft,
+                                          child: Text(
+                                            'বর্ণনা :',
+                                            style: TextStyle(
+                                              fontSize: 20,
+                                              fontFamily: 'TiroBangla-Reg',
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ),
+                                        SizedBox(
+                                          height: 15.0,
+                                        ),
+                                        Align(
+                                          alignment: Alignment.topLeft,
+                                          child: Text(
+                                            'প্রতিকার :',
+                                            style: TextStyle(
+                                              fontSize: 20,
+                                              fontFamily: 'TiroBangla-Reg',
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ),
+                                        SizedBox(
+                                          height: 15.0,
+                                        ),
+                                        Align(
+                                          alignment: Alignment.topLeft,
+                                          child: Text(
+                                            'প্রতিরোধ :',
+                                            style: TextStyle(
+                                              fontSize: 20,
+                                              fontFamily: 'TiroBangla-Reg',
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ),
+                                        SizedBox(
+                                          height: 15.0,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ),
-                            SizedBox(
-                              height: 15.0,
-                            ),
-                            Align(
-                              alignment: Alignment.topLeft,
-                              child: Text(
-                                'বর্ণনা :',
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontFamily: 'TiroBangla-Reg',
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                            SizedBox(
-                              height: 15.0,
-                            ),
-                            Align(
-                              alignment: Alignment.topLeft,
-                              child: Text(
-                                'প্রতিকার :',
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontFamily: 'TiroBangla-Reg',
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                            SizedBox(
-                              height: 15.0,
-                            ),
-                            Align(
-                              alignment: Alignment.topLeft,
-                              child: Text(
-                                'প্রতিরোধ :',
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontFamily: 'TiroBangla-Reg',
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                            SizedBox(
-                              height: 15.0,
                             ),
                           ],
                         ),
                       ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ]),
-    )));
+                    ),
+                  ]),
+            )));
   }
 }
 
@@ -2452,158 +2750,165 @@ class weed extends State<camera2> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
-      child: Scaffold(
-        resizeToAvoidBottomInset: true,
-        extendBodyBehindAppBar: true,
-        backgroundColor: Color(0xFFC1DCBD),
-        appBar: AppBar(
-          backgroundColor: Colors.green,
-          // elevation: 0,
-          // leading: IconButton(
-          //     color: Colors.white,
-          //     icon: Icon(Icons.menu),
-          //     onPressed: () {
-          //       Navigator.of(context).popUntil((route) => route.isFirst);
-          //     }),
-        ),
-        drawer: const NavigationDrawer(),
-        body: Center(child: Wrap(
-          alignment: WrapAlignment.spaceBetween,
-          direction: Axis.horizontal,
-          runSpacing: 5.0,
-          spacing: 5.0,
-
-
-          children: <Widget>[
-         Center(
-          child: Column(children: <Widget>[
-            SizedBox(
-              height: 40,
+        onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+        child: Scaffold(
+            resizeToAvoidBottomInset: true,
+            extendBodyBehindAppBar: true,
+            backgroundColor: Color(0xFFC1DCBD),
+            appBar: AppBar(
+              backgroundColor: Colors.green,
+              // elevation: 0,
+              // leading: IconButton(
+              //     color: Colors.white,
+              //     icon: Icon(Icons.menu),
+              //     onPressed: () {
+              //       Navigator.of(context).popUntil((route) => route.isFirst);
+              //     }),
             ),
+            drawer: const NavigationDrawer(),
+            body: Center(
+              child: Wrap(
+                  alignment: WrapAlignment.spaceBetween,
+                  direction: Axis.horizontal,
+                  runSpacing: 5.0,
+                  spacing: 5.0,
+                  children: <Widget>[
+                    Center(
+                      child: Column(children: <Widget>[
+                        SizedBox(
+                          height: 40,
+                        ),
 
-            Image.asset(
-              'images/weed.png',
-              width: 100,
-              height: 100,
-            ),
-            Text("আগাছা সনাক্তকরণ",
-                style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'TiroBangla-Reg')),
-            SizedBox(
-              height: 15.0,
-            ),
+                        Image.asset(
+                          'images/weed.png',
+                          width: 100,
+                          height: 100,
+                        ),
+                        Text("আগাছা সনাক্তকরণ",
+                            style: TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                fontFamily: 'TiroBangla-Reg')),
+                        SizedBox(
+                          height: 15.0,
+                        ),
 
-            SizedBox(
-              height: 50.0,
-              width: 350.0,
-              child: ElevatedButton(
-                onPressed: () => pickImage(ImageSource.gallery),
-                style: ButtonStyle(
-                    backgroundColor:
-                        MaterialStateProperty.all(Color(0xFFFFFFFF)),
-                    shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                        RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10.0)))),
+                        SizedBox(
+                          height: 50.0,
+                          width: 350.0,
+                          child: ElevatedButton(
+                            onPressed: () => pickImage(ImageSource.gallery),
+                            style: ButtonStyle(
+                                backgroundColor: MaterialStateProperty.all(
+                                    Color(0xFFFFFFFF)),
+                                shape: MaterialStateProperty.all<
+                                        RoundedRectangleBorder>(
+                                    RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(10.0)))),
 
-                // color: Colors.white,
-                // margin: EdgeInsets.symmetric(vertical: 10.0, horizontal: 25.0),
-                child: ListTile(
-                  title: Text(
-                    'ছবি আপলোড করুন',
-                    style: TextStyle(
-                      fontSize: 20.0,
-                      color: Colors.teal.shade900,
-                      fontFamily: 'Source Sans Pro',
+                            // color: Colors.white,
+                            // margin: EdgeInsets.symmetric(vertical: 10.0, horizontal: 25.0),
+                            child: ListTile(
+                              title: Text(
+                                'ছবি আপলোড করুন',
+                                style: TextStyle(
+                                  fontSize: 20.0,
+                                  color: Colors.teal.shade900,
+                                  fontFamily: 'Source Sans Pro',
+                                ),
+                              ),
+                              trailing: Icon(
+                                Icons.folder,
+                                color: Colors.teal,
+                              ),
+                            ),
+                          ),
+                        ),
+                        SizedBox(
+                          height: 10.0,
+                        ),
+                        SizedBox(
+                          height: 50.0,
+                          width: 350.0,
+                          child: ElevatedButton(
+                            onPressed: () => pickImage1(ImageSource.camera),
+                            style: ButtonStyle(
+                                backgroundColor: MaterialStateProperty.all(
+                                    Color(0xFFFFFFFF)),
+                                shape: MaterialStateProperty.all<
+                                        RoundedRectangleBorder>(
+                                    RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(10.0)))),
+
+                            // color: Colors.white,
+                            // margin: EdgeInsets.symmetric(vertical: 10.0, horizontal: 25.0),
+                            child: ListTile(
+                              title: Text(
+                                'ক্যামেরা খুলুন',
+                                style: TextStyle(
+                                  fontSize: 20.0,
+                                  color: Colors.teal.shade900,
+                                  fontFamily: 'Source Sans Pro',
+                                ),
+                              ),
+                              trailing: Icon(
+                                Icons.camera_alt,
+                                color: Colors.teal,
+                              ),
+                            ),
+                          ),
+                        ),
+                        SizedBox(
+                          height: 15.0,
+                        ),
+                        Container(
+                          height: 140,
+                          width: 180,
+                          color: Colors.black12,
+                          child: image == null
+                              ? Icon(
+                                  Icons.image,
+                                  size: 50,
+                                )
+                              : Image.file(
+                                  image!,
+                                  fit: BoxFit.fill,
+                                ),
+                        ),
+                        SizedBox(
+                          height: 15.0,
+                        ),
+                        SizedBox(
+                            width: 200,
+                            height: 50,
+                            child: ElevatedButton(
+                              child: Text('আগাছা সনাক্ত করুন',
+                                  style: TextStyle(
+                                      fontSize: 20,
+                                      fontFamily: 'TiroBangla-Reg')),
+                              style: ButtonStyle(
+                                  backgroundColor: MaterialStateProperty.all(
+                                      Color(0xFF2CA856)),
+                                  shape: MaterialStateProperty.all<
+                                          RoundedRectangleBorder>(
+                                      RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(18.0)))),
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => testcomplete3()),
+                                );
+                              },
+                            )),
+                        // _image==null? Container() : Image.file(_image)],
+                      ]),
                     ),
-                  ),
-                  trailing: Icon(
-                    Icons.folder,
-                    color: Colors.teal,
-                  ),
-                ),
-              ),
-            ),
-            SizedBox(
-              height: 10.0,
-            ),
-            SizedBox(
-              height: 50.0,
-              width: 350.0,
-              child: ElevatedButton(
-                onPressed: () => pickImage1(ImageSource.camera),
-                style: ButtonStyle(
-                    backgroundColor:
-                        MaterialStateProperty.all(Color(0xFFFFFFFF)),
-                    shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                        RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10.0)))),
-
-                // color: Colors.white,
-                // margin: EdgeInsets.symmetric(vertical: 10.0, horizontal: 25.0),
-                child: ListTile(
-                  title: Text(
-                    'ক্যামেরা খুলুন',
-                    style: TextStyle(
-                      fontSize: 20.0,
-                      color: Colors.teal.shade900,
-                      fontFamily: 'Source Sans Pro',
-                    ),
-                  ),
-                  trailing: Icon(
-                    Icons.camera_alt,
-                    color: Colors.teal,
-                  ),
-                ),
-              ),
-            ),
-            SizedBox(
-              height: 15.0,
-            ),
-            Container(
-              height: 140,
-              width: 180,
-              color: Colors.black12,
-              child: image == null
-                  ? Icon(
-                      Icons.image,
-                      size: 50,
-                    )
-                  : Image.file(
-                      image!,
-                      fit: BoxFit.fill,
-                    ),
-            ),
-            SizedBox(
-              height: 15.0,
-            ),
-            SizedBox(
-                width: 200,
-                height: 50,
-                child: ElevatedButton(
-                  child: Text('আগাছা সনাক্ত করুন',
-                      style: TextStyle(
-                          fontSize: 20, fontFamily: 'TiroBangla-Reg')),
-                  style: ButtonStyle(
-                      backgroundColor:
-                          MaterialStateProperty.all(Color(0xFF2CA856)),
-                      shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                          RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(18.0)))),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => testcomplete3()),
-                    );
-                  },
-                )),
-            // _image==null? Container() : Image.file(_image)],
-          ]),
-        ),
-      ]),
-    )));
+                  ]),
+            )));
   }
 }
 
@@ -2612,105 +2917,107 @@ class testcomplete3 extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
-      child: Scaffold(
-        resizeToAvoidBottomInset: true,
-        extendBodyBehindAppBar: true,
-        backgroundColor: Color(0xFFC1DCBD),
-        appBar: AppBar(
-          backgroundColor: Colors.green,
-          // elevation: 0,
-          // leading: IconButton(
-          //     color: Colors.white,
-          //     icon: Icon(Icons.menu),
-          //     onPressed: () {
-          //       Navigator.of(context).popUntil((route) => route.isFirst);
-          //     }),
-        ),
-        drawer: const NavigationDrawer(),
-        body: Center(child: Wrap(
-          alignment: WrapAlignment.spaceBetween,
-          direction: Axis.horizontal,
-          runSpacing: 5.0,
-          spacing: 5.0,
+        onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+        child: Scaffold(
+            resizeToAvoidBottomInset: true,
+            extendBodyBehindAppBar: true,
+            backgroundColor: Color(0xFFC1DCBD),
+            appBar: AppBar(
+              backgroundColor: Colors.green,
+              // elevation: 0,
+              // leading: IconButton(
+              //     color: Colors.white,
+              //     icon: Icon(Icons.menu),
+              //     onPressed: () {
+              //       Navigator.of(context).popUntil((route) => route.isFirst);
+              //     }),
+            ),
+            drawer: const NavigationDrawer(),
+            body: Center(
+              child: Wrap(
+                  alignment: WrapAlignment.spaceBetween,
+                  direction: Axis.horizontal,
+                  runSpacing: 5.0,
+                  spacing: 5.0,
+                  children: <Widget>[
+                    Center(
+                      child: Column(
+                        children: <Widget>[
+                          SizedBox(
+                            height: 90,
+                          ),
+                          Image.asset(
+                            'images/weed.png',
+                            width: 60,
+                            height: 60,
+                          ),
+                          Text(
+                            "আগাছা সনাক্তকরণ",
+                            style: TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                fontFamily: 'TiroBangla-Reg'),
+                          ),
+                          SizedBox(
+                            height: 40.0,
+                          ),
+                          SizedBox(
+                            //<-- SEE HERE
+                            width: 250,
+                            height: 250,
+                            child: FittedBox(
+                              //<-- SEE HERE
 
-
-          children: <Widget>[
-         Center(
-          child: Column(
-            children: <Widget>[
-              SizedBox(
-                height: 90,
-              ),
-              Image.asset(
-                'images/weed.png',
-                width: 60,
-                height: 60,
-              ),
-              Text(
-                "আগাছা সনাক্তকরণ",
-                style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'TiroBangla-Reg'),
-              ),
-              SizedBox(
-                height: 40.0,
-              ),
-              SizedBox(
-                //<-- SEE HERE
-                width: 250,
-                height: 250,
-                child: FittedBox(
-                  //<-- SEE HERE
-
-                  child: CircleAvatar(
-                    radius: 100,
-                    backgroundColor: Colors.white,
-                    backgroundImage: AssetImage('images/testcomplete.png'),
-                  ),
-                ),
-              ),
-              SizedBox(
-                height: 30.0,
-              ),
-              Text(
-                'পরীক্ষা সম্পন্ন হয়েছে',
-                style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'TiroBangla-Reg'),
-              ),
-              SizedBox(
-                height: 50.0,
-              ),
-              SizedBox(
-                  width: 200,
-                  height: 50,
-                  child: ElevatedButton(
-                    child: Text('ফলাফল দেখান',
-                        style: TextStyle(
-                            fontSize: 24, fontFamily: 'TiroBangla-Reg')),
-                    style: ButtonStyle(
-                        backgroundColor:
-                            MaterialStateProperty.all(Color(0xFF2CA856)),
-                        shape:
-                            MaterialStateProperty.all<RoundedRectangleBorder>(
-                                RoundedRectangleBorder(
-                                    borderRadius:
-                                        BorderRadius.circular(18.0)))),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => weedresult()),
-                      );
-                    },
-                  )),
-            ],
-          ),
-        ),
-      ]),
-    )));
+                              child: CircleAvatar(
+                                radius: 100,
+                                backgroundColor: Colors.white,
+                                backgroundImage:
+                                    AssetImage('images/testcomplete.png'),
+                              ),
+                            ),
+                          ),
+                          SizedBox(
+                            height: 30.0,
+                          ),
+                          Text(
+                            'পরীক্ষা সম্পন্ন হয়েছে',
+                            style: TextStyle(
+                                fontSize: 28,
+                                fontWeight: FontWeight.bold,
+                                fontFamily: 'TiroBangla-Reg'),
+                          ),
+                          SizedBox(
+                            height: 50.0,
+                          ),
+                          SizedBox(
+                              width: 200,
+                              height: 50,
+                              child: ElevatedButton(
+                                child: Text('ফলাফল দেখান',
+                                    style: TextStyle(
+                                        fontSize: 24,
+                                        fontFamily: 'TiroBangla-Reg')),
+                                style: ButtonStyle(
+                                    backgroundColor: MaterialStateProperty.all(
+                                        Color(0xFF2CA856)),
+                                    shape: MaterialStateProperty.all<
+                                            RoundedRectangleBorder>(
+                                        RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(18.0)))),
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => weedresult()),
+                                  );
+                                },
+                              )),
+                        ],
+                      ),
+                    ),
+                  ]),
+            )));
   }
 }
 
@@ -2719,163 +3026,162 @@ class weedresult extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
-      child: Scaffold(
-        resizeToAvoidBottomInset: false,
-        extendBodyBehindAppBar: true,
-        backgroundColor: Color(0xFFC1DCBD),
-        appBar: AppBar(
-          backgroundColor: Colors.green,
-          // elevation: 0,
-          // leading: IconButton(
-          //     color: Colors.white,
-          //     icon: Icon(Icons.menu),
-          //     onPressed: () {
-          //       Navigator.of(context).popUntil((route) => route.isFirst);
-          //     }),
-        ),
-        drawer: const NavigationDrawer(),
-        body: Center(child: Wrap(
-          alignment: WrapAlignment.spaceBetween,
-          direction: Axis.horizontal,
-          runSpacing: 5.0,
-          spacing: 5.0,
-
-
-          children: <Widget>[
-        Center(
-          child: SingleChildScrollView(
-            child: Column(
-              children: <Widget>[
-                SizedBox(
-                  height: 90,
-                ),
-                Image.asset(
-                  'images/weed.png',
-                  width: 60,
-                  height: 60,
-                ),
-                Text(
-                  "আগাছা সনাক্তকরণ",
-                  style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'TiroBangla-Reg'),
-                ),
-                SizedBox(
-                  height: 40.0,
-                ),
-                // SizedBox(
-                //   //<-- SEE HERE
-                //   width: 250,
-                //   height: 250,
-                //
-                // // ),
-                // SizedBox(
-                //   height: 5.0,
-                // ),
-
-                SizedBox(
-                  width: 350,
-                  height: 500,
-                  child: Column(
-                    children: [
-                      SizedBox(
-                        height: 30.0,
-                      ),
-                      Container(
-                        padding: EdgeInsets.all(15.0),
-                        width: 340.0,
-                        decoration: BoxDecoration(
-                            color: Colors.green,
-                            borderRadius:
-                                BorderRadius.all(Radius.circular(20))),
+        onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+        child: Scaffold(
+            resizeToAvoidBottomInset: false,
+            extendBodyBehindAppBar: true,
+            backgroundColor: Color(0xFFC1DCBD),
+            appBar: AppBar(
+              backgroundColor: Colors.green,
+              // elevation: 0,
+              // leading: IconButton(
+              //     color: Colors.white,
+              //     icon: Icon(Icons.menu),
+              //     onPressed: () {
+              //       Navigator.of(context).popUntil((route) => route.isFirst);
+              //     }),
+            ),
+            drawer: const NavigationDrawer(),
+            body: Center(
+              child: Wrap(
+                  alignment: WrapAlignment.spaceBetween,
+                  direction: Axis.horizontal,
+                  runSpacing: 5.0,
+                  spacing: 5.0,
+                  children: <Widget>[
+                    Center(
+                      child: SingleChildScrollView(
                         child: Column(
-                          children: [
+                          children: <Widget>[
                             SizedBox(
-                              height: 15.0,
+                              height: 90,
                             ),
-                            Align(
-                              alignment: Alignment.topCenter,
-                              child: Text(
-                                'আগাছা সম্পর্কিত তথ্য',
-                                style: TextStyle(
+                            Image.asset(
+                              'images/weed.png',
+                              width: 60,
+                              height: 60,
+                            ),
+                            Text(
+                              "আগাছা সনাক্তকরণ",
+                              style: TextStyle(
                                   fontSize: 24,
-                                  fontFamily: 'TiroBangla-Reg',
-                                  color: Colors.white,
-                                ),
-                              ),
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: 'TiroBangla-Reg'),
                             ),
                             SizedBox(
-                              height: 20.0,
+                              height: 40.0,
                             ),
-                            Align(
-                              alignment: Alignment.topLeft,
-                              child: Text(
-                                'ফলাফল(হ্যা/না) :',
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontFamily: 'TiroBangla-Reg',
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
+                            // SizedBox(
+                            //   //<-- SEE HERE
+                            //   width: 250,
+                            //   height: 250,
+                            //
+                            // // ),
+                            // SizedBox(
+                            //   height: 5.0,
+                            // ),
+
                             SizedBox(
-                              height: 15.0,
-                            ),
-                            Align(
-                              alignment: Alignment.topLeft,
-                              child: Text(
-                                'সঠিক(শতকরা) :',
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontFamily: 'TiroBangla-Reg',
-                                  color: Colors.white,
-                                ),
+                              width: 350,
+                              height: 500,
+                              child: Column(
+                                children: [
+                                  SizedBox(
+                                    height: 30.0,
+                                  ),
+                                  Container(
+                                    padding: EdgeInsets.all(15.0),
+                                    width: 340.0,
+                                    decoration: BoxDecoration(
+                                        color: Colors.green,
+                                        borderRadius: BorderRadius.all(
+                                            Radius.circular(20))),
+                                    child: Column(
+                                      children: [
+                                        SizedBox(
+                                          height: 15.0,
+                                        ),
+                                        Align(
+                                          alignment: Alignment.topCenter,
+                                          child: Text(
+                                            'আগাছা সম্পর্কিত তথ্য',
+                                            style: TextStyle(
+                                              fontSize: 24,
+                                              fontFamily: 'TiroBangla-Reg',
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ),
+                                        SizedBox(
+                                          height: 20.0,
+                                        ),
+                                        Align(
+                                          alignment: Alignment.topLeft,
+                                          child: Text(
+                                            'ফলাফল(হ্যা/না) :',
+                                            style: TextStyle(
+                                              fontSize: 20,
+                                              fontFamily: 'TiroBangla-Reg',
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ),
+                                        SizedBox(
+                                          height: 15.0,
+                                        ),
+                                        Align(
+                                          alignment: Alignment.topLeft,
+                                          child: Text(
+                                            'সঠিক(শতকরা) :',
+                                            style: TextStyle(
+                                              fontSize: 20,
+                                              fontFamily: 'TiroBangla-Reg',
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ),
+                                        SizedBox(
+                                          height: 15.0,
+                                        ),
+                                        Align(
+                                          alignment: Alignment.topLeft,
+                                          child: Text(
+                                            'প্রতিকার :',
+                                            style: TextStyle(
+                                              fontSize: 20,
+                                              fontFamily: 'TiroBangla-Reg',
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ),
+                                        SizedBox(
+                                          height: 15.0,
+                                        ),
+                                        Align(
+                                          alignment: Alignment.topLeft,
+                                          child: Text(
+                                            'প্রতিরোধ :',
+                                            style: TextStyle(
+                                              fontSize: 20,
+                                              fontFamily: 'TiroBangla-Reg',
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ),
+                                        SizedBox(
+                                          height: 15.0,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ),
-                            SizedBox(
-                              height: 15.0,
-                            ),
-                            Align(
-                              alignment: Alignment.topLeft,
-                              child: Text(
-                                'প্রতিকার :',
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontFamily: 'TiroBangla-Reg',
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                            SizedBox(
-                              height: 15.0,
-                            ),
-                            Align(
-                              alignment: Alignment.topLeft,
-                              child: Text(
-                                'প্রতিরোধ :',
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontFamily: 'TiroBangla-Reg',
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                            SizedBox(
-                              height: 15.0,
                             ),
                           ],
                         ),
                       ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ]),
-    )));
+                    ),
+                  ]),
+            )));
   }
 }
